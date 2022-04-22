@@ -27,22 +27,22 @@ public class ListGraph<T> implements Graph<T>, Serializable {
             throw new IllegalArgumentException("Error: Weight cannot be negative.");
         }
 
-        Set<Edge<T>> aEdges = nodes.get(node1);
-        Set<Edge<T>> bEdges = nodes.get(node2);
+        Set<Edge<T>> edgesFromOne = nodes.get(node1);
+        Set<Edge<T>> edgesFromTwo = nodes.get(node2);
 
-        for (Edge<T> edge : aEdges) {
+        for (Edge<T> edge : edgesFromOne) {
             if (edge.getDestination() == node2) {
                 throw new IllegalStateException("Error: Connection between " + node1.toString() + " and " + node2.toString() + " already exists.");
             }
         }
-        for (Edge<T> edge : bEdges) {
+        for (Edge<T> edge : edgesFromTwo) {
             if (edge.getDestination() == node1) {
                 throw new IllegalStateException("Error: Connection between " + node1.toString() + " and " + node2.toString() + " already exists.");
             }
         }
 
-        aEdges.add(new Edge<T>(node2, name, weight));
-        bEdges.add(new Edge<T>(node1, name, weight));
+        edgesFromOne.add(new Edge<T>(node2, name, weight));
+        edgesFromTwo.add(new Edge<T>(node1, name, weight));
     }
 
     @Override
@@ -100,11 +100,11 @@ public class ListGraph<T> implements Graph<T>, Serializable {
         if(edge1 == null || edge2 == null){
             throw new IllegalStateException("Error: There is no edge between the nodes.");
         }
-        Set<Edge<T>> aEdges = nodes.get(node1);
-        Set<Edge<T>> bEdges = nodes.get(node2);
+        Set<Edge<T>> edgesFromOne = nodes.get(node1);
+        Set<Edge<T>> edgesFromTwo = nodes.get(node2);
         
-        aEdges.remove(edge1);
-        bEdges.remove(edge2);
+        edgesFromOne.remove(edge1);
+        edgesFromTwo.remove(edge2);
     }
 
     @Override
