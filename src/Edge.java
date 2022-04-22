@@ -30,10 +30,8 @@ public class Edge<T> implements Serializable {
 
     @Override
     public String toString(){
-        return "Edge{" +
-                "destination=" + destination +
-                ", name='" + name + '\'' +
-                ", weight=" + weight +
-                '}';
+        return "till " + destination +
+                " med " + name +
+                " tar " + weight;
     }
 }

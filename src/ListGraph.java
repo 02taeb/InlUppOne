@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,10 +47,12 @@ public class ListGraph<T> implements Graph<T>, Serializable {
 
     @Override
     public void setConnectionWeight(T node1, T node2, int weight) {
-        Edge<T> edge = getEdgeBetween(node1, node2);
-        if(edge != null){
+        Edge<T> edge1 = getEdgeBetween(node1, node2);
+        Edge<T> edge2 = getEdgeBetween(node2, node1);
+        if(edge1 != null && edge2 != null){
             if(weight > 0){
-                edge.setWeight(weight);
+                edge1.setWeight(weight);
+                edge2.setWeight(weight);
             }else{
                 throw new IllegalArgumentException("Error: Cannot add a negative weight.");
             }
@@ -74,13 +77,13 @@ public class ListGraph<T> implements Graph<T>, Serializable {
 
     @Override
     public Edge<T> getEdgeBetween(T node1, T node2) {
+        if(!nodes.containsKey(node1) || !nodes.containsKey(node2)){
+            throw new NoSuchElementException("Error: One or both destinations missing.");
+        }
         for (Edge<T> edge : nodes.get(node1)) {
             if (edge.getDestination().equals(node2)) {
                 return edge;
             }
-        }
-        if(!nodes.containsKey(node1) || !nodes.containsKey(node2)){
-            throw new NoSuchElementException("Error: One or both destinations missing.");
         }
 
         return null;
@@ -88,6 +91,10 @@ public class ListGraph<T> implements Graph<T>, Serializable {
 
     @Override
     public void disconnect(T node1, T node2) {
+        if(!nodes.containsKey(node1) || !nodes.containsKey(node2)){
+            throw new NoSuchElementException("Error: One or both destinations missing.");
+        }
+        
         Edge<T> edge1 = getEdgeBetween(node1, node2);
         Edge<T> edge2 = getEdgeBetween(node2, node1);
         if(edge1 == null || edge2 == null){
@@ -102,17 +109,25 @@ public class ListGraph<T> implements Graph<T>, Serializable {
 
     @Override
     public void remove(T node) {
-        if(nodes.containsKey(node)){
+        if(!nodes.containsKey(node)){
             throw new NoSuchElementException("Error: The node does not exist in the graph.");
         }
+        ArrayList<T> destinations = new ArrayList<T>();
         for (Edge<T> edge : getEdgesFrom(node)) {
-            disconnect(node, edge.getDestination());
+            destinations.add(edge.getDestination());
+        }
+        while (destinations.size() > 0) {
+            disconnect(node, destinations.get(0));
+            destinations.remove(0);
         }
         nodes.remove(node);
     }
 
     @Override
     public boolean pathExists(T from, T to) {
+        if(!nodes.containsKey(from) || !nodes.containsKey(to)){
+            return false;
+        }
         Set<T> visited = new HashSet<>();
         depthFirstVisitAll(from, visited);
         return visited.contains(to);
@@ -132,7 +147,7 @@ public class ListGraph<T> implements Graph<T>, Serializable {
         Map<T, T> connection = new HashMap<>();
         depthFirstConnection(from, null, connection);
         if (!connection.containsKey(to)) {
-            return Collections.emptyList();
+            return null;
         }
         return gatherPath(from, to, connection);
     }
@@ -163,17 +178,11 @@ public class ListGraph<T> implements Graph<T>, Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (T node : nodes.keySet()) {
-            sb.append("Node: " + node.toString());
-            if (nodes.get(node) != null) {
-                sb.append(" with no edges");
-            } else {
-                sb.append(" with edges {");
-            }
+            sb.append(node.toString());
             for (Edge<T> edge : nodes.get(node)) {
-                sb.append("Edge: " + edge.toString() + ", ");
+                sb.append(" " + edge.toString());
             }
-            sb.delete(sb.lastIndexOf(","), sb.length());
-            sb.append("}\n");
+            sb.append("\n");
         }
 
         return sb.toString();
